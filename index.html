@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VPT License">
+<meta name="theme-color" content="#080c14">
+<link rel="apple-touch-icon" href="icon.png">
+<title>VPT License Manager</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  /* Dán toàn bộ CSS từ Index.html của GAS vào đây */
+</style>
+</head>
+<body>
+  <!-- Dán toàn bộ HTML body từ Index.html của GAS vào đây -->
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxbtH79eAQf7tqxzaV-bvo_I0PTd14mZ5mCGSJCjVg3V5m03PJBK8589iIBN8Z9uoMU/exec";
+const PASS = "0211";
+
+// Thay thế google.script.run bằng fetch
+async function apiGet(action, params = {}) {
+  params.p = PASS;
+  params.action = action;
+  const url = GAS_URL + "?" + new URLSearchParams(params);
+  const res = await fetch(url);
+  return res.json();
+}
+
+var allCustomers = [];
+var activeStatusFilter = null;
+
+// Thay hàm loadList
+function loadList() {
+  document.getElementById('cust-list').innerHTML = '<div class="loading"><span class="spin">⏳</span>Đang tải...</div>';
+  apiGet("getLicenses").then(function(data) {
+    allCustomers = data;
+    renderStats(data);
+    renderList(data);
+  }).catch(function(e) {
+    document.getElementById('cust-list').innerHTML = '<div class="empty"><div class="ico">⚠️</div>Lỗi kết nối</div>';
+  });
+}
+
+// Thay hàm createKey
+function createKey() {
+  var name = document.getElementById('inp-name').value.trim();
+  var note = document.getElementById('inp-note').value.trim();
+  var days = getDays();
+  if (!name) { showToast('⚠️ Vui lòng nhập tên khách hàng!','#eab308'); return; }
+  if (!days)  { showToast('⚠️ Vui lòng nhập số ngày hợp lệ!','#eab308'); return; }
+
+  var btn = document.getElementById('btn-create');
+  btn.disabled = true; btn.textContent = '⏳ Đang tạo...';
+
+  var token  = generateToken();
+  var expiry = new Date();
+  expiry.setDate(expiry.getDate() + days);
+  var expiryStr = expiry.toISOString().slice(0,10);
+
+  apiGet("addLicense", { token, expiry: expiryStr, name, note }).then(function(res) {
+    btn.disabled = false; btn.innerHTML = '✨ Tạo Key &amp; Thêm vào Sheet';
+    if (res.success) showResult(token, expiryStr, name, note, days);
+    else showToast('❌ Lỗi khi ghi vào Sheet!','#ef4444');
+  }).catch(function() {
+    btn.disabled = false; btn.innerHTML = '✨ Tạo Key &amp; Thêm vào Sheet';
+    showToast('❌ Không kết nối được server!','#ef4444');
+  });
+}
+
+// Giữ nguyên tất cả hàm còn lại từ Index.html
+</script>
+</body>
+</html>
