@@ -7,70 +7,289 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VPT License">
 <meta name="theme-color" content="#080c14">
-<link rel="apple-touch-icon" href="icon.png">
 <title>VPT License Manager</title>
-<link rel="manifest" href="manifest.json">
 <style>
-  /* Dán toàn bộ CSS từ Index.html của GAS vào đây */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:#080c14;color:#e2e8f0;min-height:100vh}
+  .header{background:linear-gradient(135deg,#0f172a 0%,#1a0a2e 100%);padding:20px 24px 16px;border-bottom:1px solid rgba(249,115,22,.2);position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,.15) 0%,transparent 70%)}
+  .header-row{display:flex;align-items:center;gap:14px;position:relative}
+  .logo{width:42px;height:42px;background:linear-gradient(135deg,#f97316,#ea580c);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 15px rgba(249,115,22,.4);flex-shrink:0}
+  .header h1{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.3px}
+  .header p{font-size:12px;color:#64748b;margin-top:2px}
+  .tabs{display:flex;background:#0d1420;padding:6px;gap:6px;border-bottom:1px solid #1e293b}
+  .tab{flex:1;padding:10px 8px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;border-radius:8px;color:#475569;transition:all .2s}
+  .tab.active{background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;box-shadow:0 4px 12px rgba(249,115,22,.35)}
+  .tab:not(.active):hover{background:#1e293b;color:#94a3b8}
+  .content{padding:18px 16px}
+  .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px}
+  .stat{background:#0d1420;border-radius:14px;padding:14px 10px;text-align:center;border:1px solid #1e293b;position:relative;overflow:hidden;cursor:pointer;transition:all .2s;user-select:none}
+  .stat:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+  .stat::before{content:'';position:absolute;inset:0;opacity:.05;border-radius:14px}
+  .stat.green::before{background:#22c55e}.stat.yellow::before{background:#eab308}.stat.red::before{background:#ef4444}
+  .stat.green.selected{border-color:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,.3)}
+  .stat.yellow.selected{border-color:#eab308;box-shadow:0 0 0 2px rgba(234,179,8,.3)}
+  .stat.red.selected{border-color:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,.3)}
+  .stat .ico{font-size:18px;margin-bottom:4px}
+  .stat .num{font-size:26px;font-weight:800;line-height:1}
+  .stat.green .num{color:#22c55e}.stat.yellow .num{color:#eab308}.stat.red .num{color:#ef4444}
+  .stat .lbl{font-size:10px;color:#475569;margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+  .card{background:linear-gradient(145deg,#0d1420,#111827);border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid #1e293b;box-shadow:0 4px 24px rgba(0,0,0,.3)}
+  .card-title{font-size:11px;font-weight:700;color:#f97316;text-transform:uppercase;letter-spacing:1px;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+  .card-title::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(249,115,22,.3),transparent)}
+  label{font-size:12px;color:#64748b;display:block;margin-bottom:6px;font-weight:500}
+  .field{margin-bottom:14px}
+  input,select{width:100%;padding:11px 14px;background:#080c14;border:1px solid #1e293b;border-radius:10px;color:#e2e8f0;font-size:14px;font-family:'Inter',sans-serif;transition:border-color .2s,box-shadow .2s}
+  input:focus,select:focus{outline:none;border-color:#f97316;box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+  input::placeholder{color:#334155}
+  select option{background:#0d1420}
+  .custom-days{margin-top:8px;display:none}
+  .btn-primary{width:100%;padding:14px;border:none;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;box-shadow:0 4px 20px rgba(249,115,22,.4);transition:all .2s;letter-spacing:.3px}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(249,115,22,.5)}
+  .btn-primary:disabled{background:#1e293b;color:#475569;box-shadow:none;cursor:not-allowed;transform:none}
+  .result{background:linear-gradient(145deg,#0a1a0a,#0d1f0d);border:1px solid rgba(34,197,94,.3);border-radius:16px;padding:20px;margin-top:16px;display:none;box-shadow:0 4px 24px rgba(34,197,94,.1)}
+  .result-label{font-size:11px;color:#16a34a;text-align:center;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+  .result-token{font-size:24px;font-weight:800;color:#22c55e;letter-spacing:3px;text-align:center;margin:12px 0 4px;font-family:'Courier New',monospace;text-shadow:0 0 20px rgba(34,197,94,.4)}
+  .result-meta{font-size:12px;color:#4ade80;text-align:center;margin-bottom:14px}
+  .btn-copy{width:100%;padding:11px;margin-bottom:10px;background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+  .divider{height:1px;background:rgba(34,197,94,.1);margin:12px 0}
+  .msg-preview{background:rgba(0,0,0,.3);border-radius:10px;padding:12px;font-size:12px;color:#64748b;white-space:pre-wrap;line-height:1.7;border:1px solid #1e293b;max-height:160px;overflow-y:auto}
+  .btn-copy-msg{width:100%;padding:10px;margin-top:10px;background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer}
+  .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .filter-badge{font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(249,115,22,.15);color:#f97316;border:1px solid rgba(249,115,22,.3);cursor:pointer;font-weight:600}
+  .search-wrap{position:relative;margin-bottom:14px}
+  .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#334155;font-size:15px}
+  .search{width:100%;padding:11px 14px 11px 38px;background:#0d1420;border:1px solid #1e293b;border-radius:10px;color:#e2e8f0;font-size:14px;font-family:'Inter',sans-serif}
+  .search:focus{outline:none;border-color:#f97316}
+  .date-group{font-size:11px;color:#334155;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:8px 4px 6px;border-bottom:1px solid #1e293b;margin-bottom:8px;margin-top:16px}
+  .date-group:first-child{margin-top:0}
+  .customer{background:linear-gradient(145deg,#0d1420,#111827);border-radius:14px;padding:16px;margin-bottom:10px;border:1px solid #1e293b;border-left:3px solid #1e293b;transition:all .2s;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+  .customer.active{border-left-color:#22c55e}.customer.warning{border-left-color:#eab308}.customer.expired{border-left-color:#ef4444}.customer.pending{border-left-color:#475569}
+  .cust-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+  .cust-name{font-size:15px;font-weight:700;color:#f1f5f9}
+  .badge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+  .badge.active{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
+  .badge.warning{background:rgba(234,179,8,.15);color:#eab308;border:1px solid rgba(234,179,8,.3)}
+  .badge.expired{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
+  .badge.pending{background:rgba(71,85,105,.2);color:#94a3b8;border:1px solid rgba(71,85,105,.4)}
+  .cust-token{font-size:13px;color:#f97316;font-family:'Courier New',monospace;font-weight:600;margin-bottom:8px;letter-spacing:1px}
+  .cust-bottom{display:flex;justify-content:space-between}
+  .cust-info{font-size:11px;color:#475569}.cust-info span{color:#64748b}
+  .cust-note{font-size:11px;color:#475569;margin-top:4px;font-style:italic}
+  .loading{text-align:center;padding:50px 20px;color:#334155}
+  .loading .spin{font-size:30px;animation:spin 1s linear infinite;display:block;margin-bottom:12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .empty{text-align:center;padding:50px 20px;color:#334155}
+  .empty .ico{font-size:40px;margin-bottom:12px}
+  .page{display:none}.page.active{display:block}
+  .success-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#166534;color:#22c55e;padding:12px 24px;border-radius:50px;font-size:13px;font-weight:600;border:1px solid rgba(34,197,94,.3);box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:999;display:none;animation:fadeup .3s ease}
+  @keyframes fadeup{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 </style>
 </head>
 <body>
-  <!-- Dán toàn bộ HTML body từ Index.html của GAS vào đây -->
+<div class="header">
+  <div class="header-row">
+    <div class="logo">🔐</div>
+    <div><h1>VPT License Manager</h1><p>Quản lý bản quyền phần mềm PCCC</p></div>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('create')">➕ Tạo Key</div>
+  <div class="tab" onclick="switchTab('list')">👥 Khách hàng</div>
+</div>
+<div class="content">
+  <div class="page active" id="page-create">
+    <div class="stats">
+      <div class="stat green" id="stat-active" onclick="filterByStatus('active')"><div class="ico">✅</div><div class="num" id="s-active">-</div><div class="lbl">Đang dùng</div></div>
+      <div class="stat yellow" id="stat-warning" onclick="filterByStatus('warning')"><div class="ico">⚠️</div><div class="num" id="s-warn">-</div><div class="lbl">Sắp hết</div></div>
+      <div class="stat red" id="stat-expired" onclick="filterByStatus('expired')"><div class="ico">❌</div><div class="num" id="s-exp">-</div><div class="lbl">Hết hạn</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔑 Tạo Key Mới</div>
+      <div class="field"><label>Tên khách hàng *</label><input type="text" id="inp-name" placeholder="VD: Công ty PCCC Minh Anh"></div>
+      <div class="field">
+        <label>Thời hạn sử dụng</label>
+        <select id="inp-days" onchange="onDaysChange()">
+          <option value="3">⏱ 3 ngày — dùng thử</option>
+          <option value="365" selected>🗓 365 ngày — 1 năm</option>
+          <option value="3650">📆 3650 ngày — 10 năm</option>
+          <option value="7300">🏆 7300 ngày — 20 năm</option>
+          <option value="10950">♾️ 10950 ngày — 30 năm</option>
+          <option value="custom">✏️ Tự nhập số ngày...</option>
+        </select>
+        <div class="custom-days" id="custom-days-wrap"><input type="number" id="inp-custom-days" placeholder="Nhập số ngày (VD: 180)" min="1"></div>
+      </div>
+      <div class="field"><label>Ghi chú (Tùy chọn)</label><input type="text" id="inp-note" placeholder="VD: Mua qua Zalo, giá 500k..."></div>
+      <button class="btn-primary" id="btn-create" onclick="createKey()">✨ Tạo Key &amp; Thêm vào Sheet</button>
+    </div>
+    <div class="result" id="result">
+      <div class="result-label">✅ Tạo key thành công</div>
+      <div class="result-token" id="res-token"></div>
+      <div class="result-meta" id="res-meta"></div>
+      <button class="btn-copy" onclick="copyToken()">📋 Copy Token</button>
+      <div class="divider"></div>
+      <label style="color:#4ade80;font-size:11px;margin-bottom:6px">📤 Tin nhắn gửi khách</label>
+      <div class="msg-preview" id="res-msg"></div>
+      <button class="btn-copy-msg" onclick="copyMsg()">📤 Copy tin nhắn</button>
+    </div>
+  </div>
+  <div class="page" id="page-list">
+    <div class="list-header">
+      <span style="font-size:13px;color:#64748b" id="list-count"></span>
+      <span class="filter-badge" id="filter-clear" onclick="clearFilter()" style="display:none">✕ Bỏ lọc</span>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search" type="text" id="search" placeholder="Tìm tên khách hoặc token..." oninput="filterList()">
+    </div>
+    <div id="cust-list"><div class="loading"><span class="spin">⏳</span>Đang tải dữ liệu...</div></div>
+  </div>
+</div>
+<div class="success-toast" id="toast"></div>
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxbtH79eAQf7tqxzaV-bvo_I0PTd14mZ5mCGSJCjVg3V5m03PJBK8589iIBN8Z9uoMU/exec";
-const PASS = "0211";
+const PASS    = "0211";
 
-// Thay thế google.script.run bằng fetch
-async function apiGet(action, params = {}) {
-  params.p = PASS;
-  params.action = action;
-  const url = GAS_URL + "?" + new URLSearchParams(params);
-  const res = await fetch(url);
+var allCustomers      = [];
+var activeStatusFilter = null;
+
+async function api(action, params) {
+  var p = Object.assign({ p: PASS, action: action }, params || {});
+  var url = GAS_URL + "?" + new URLSearchParams(p).toString();
+  var res = await fetch(url);
   return res.json();
 }
 
-var allCustomers = [];
-var activeStatusFilter = null;
-
-// Thay hàm loadList
-function loadList() {
-  document.getElementById('cust-list').innerHTML = '<div class="loading"><span class="spin">⏳</span>Đang tải...</div>';
-  apiGet("getLicenses").then(function(data) {
-    allCustomers = data;
-    renderStats(data);
-    renderList(data);
-  }).catch(function(e) {
-    document.getElementById('cust-list').innerHTML = '<div class="empty"><div class="ico">⚠️</div>Lỗi kết nối</div>';
-  });
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(function(t,i){ t.classList.toggle('active',(tab==='create'&&i===0)||(tab==='list'&&i===1)); });
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('page-'+tab).classList.add('active');
+  if (tab==='list') loadList();
 }
 
-// Thay hàm createKey
+function filterByStatus(status) {
+  activeStatusFilter = activeStatusFilter===status ? null : status;
+  ['active','warning','expired'].forEach(function(s){ document.getElementById('stat-'+s).classList.toggle('selected', activeStatusFilter===s); });
+  switchTab('list');
+}
+
+function clearFilter() {
+  activeStatusFilter = null;
+  ['active','warning','expired'].forEach(function(s){ document.getElementById('stat-'+s).classList.remove('selected'); });
+  renderList(allCustomers);
+}
+
+function onDaysChange() {
+  document.getElementById('custom-days-wrap').style.display = document.getElementById('inp-days').value==='custom' ? 'block' : 'none';
+}
+
+function getDays() {
+  var v = document.getElementById('inp-days').value;
+  if (v==='custom') { var c=parseInt(document.getElementById('inp-custom-days').value); return isNaN(c)||c<1?null:c; }
+  return parseInt(v);
+}
+
+function generateToken() {
+  var alpha="ABCDEFGHJKLMNPQRSTUVWXYZ23456789", c="";
+  for(var i=0;i<12;i++) c+=alpha[Math.floor(Math.random()*alpha.length)];
+  return "VPT-"+c.slice(0,4)+"-"+c.slice(4,8)+"-"+c.slice(8,12);
+}
+
 function createKey() {
-  var name = document.getElementById('inp-name').value.trim();
-  var note = document.getElementById('inp-note').value.trim();
-  var days = getDays();
-  if (!name) { showToast('⚠️ Vui lòng nhập tên khách hàng!','#eab308'); return; }
-  if (!days)  { showToast('⚠️ Vui lòng nhập số ngày hợp lệ!','#eab308'); return; }
-
-  var btn = document.getElementById('btn-create');
-  btn.disabled = true; btn.textContent = '⏳ Đang tạo...';
-
-  var token  = generateToken();
-  var expiry = new Date();
-  expiry.setDate(expiry.getDate() + days);
-  var expiryStr = expiry.toISOString().slice(0,10);
-
-  apiGet("addLicense", { token, expiry: expiryStr, name, note }).then(function(res) {
-    btn.disabled = false; btn.innerHTML = '✨ Tạo Key &amp; Thêm vào Sheet';
-    if (res.success) showResult(token, expiryStr, name, note, days);
+  var name=document.getElementById('inp-name').value.trim();
+  var note=document.getElementById('inp-note').value.trim();
+  var days=getDays();
+  if(!name){showToast('⚠️ Vui lòng nhập tên khách hàng!','#eab308');return;}
+  if(!days){showToast('⚠️ Vui lòng nhập số ngày hợp lệ!','#eab308');return;}
+  var btn=document.getElementById('btn-create');
+  btn.disabled=true; btn.textContent='⏳ Đang tạo...';
+  var token=generateToken();
+  var expiry=new Date(); expiry.setDate(expiry.getDate()+days);
+  var expiryStr=expiry.toISOString().slice(0,10);
+  api("addLicense",{token:token,expiry:expiryStr,name:name,note:note}).then(function(res){
+    btn.disabled=false; btn.innerHTML='✨ Tạo Key &amp; Thêm vào Sheet';
+    if(res.success) showResult(token,expiryStr,name,note,days);
     else showToast('❌ Lỗi khi ghi vào Sheet!','#ef4444');
-  }).catch(function() {
-    btn.disabled = false; btn.innerHTML = '✨ Tạo Key &amp; Thêm vào Sheet';
+  }).catch(function(){
+    btn.disabled=false; btn.innerHTML='✨ Tạo Key &amp; Thêm vào Sheet';
     showToast('❌ Không kết nối được server!','#ef4444');
   });
 }
 
-// Giữ nguyên tất cả hàm còn lại từ Index.html
+function showResult(token,expiry,name,note,days){
+  var d=new Date(expiry), displayExpiry=d.toLocaleDateString('vi-VN');
+  document.getElementById('res-token').textContent=token;
+  document.getElementById('res-meta').textContent='👤 '+name+'   📅 Hạn đến '+displayExpiry;
+  var msg='Chào '+name+',\n\nKey kích hoạt VPT PCCC của bạn:\n🔑 '+token+'\n📅 Hạn sử dụng đến: '+displayExpiry+'\n\nHướng dẫn kích hoạt:\n1. Mở phần mềm VPT PCCC trong AutoCAD\n2. Nhấn nút 🔑 góc dưới phải\n3. Dán key vào ô "Nhập Key" → nhấn KÍCH HOẠT\n4. Cần có mạng internet lần đầu kích hoạt\n\nMọi thắc mắc: thietkelongson@gmail.com';
+  document.getElementById('res-msg').textContent=msg;
+  document.getElementById('result').style.display='block';
+  document.getElementById('inp-name').value='';
+  document.getElementById('inp-note').value='';
+  document.getElementById('result').scrollIntoView({behavior:'smooth',block:'nearest'});
+  showToast('✅ Đã tạo key và thêm vào Sheet!');
+  api("getLicenses").then(renderStats);
+}
+
+function copyToken(){ navigator.clipboard.writeText(document.getElementById('res-token').textContent).then(function(){showToast('📋 Đã copy token!');}); }
+function copyMsg(){ navigator.clipboard.writeText(document.getElementById('res-msg').textContent).then(function(){showToast('📤 Đã copy tin nhắn!');}); }
+
+function loadList(){
+  document.getElementById('cust-list').innerHTML='<div class="loading"><span class="spin">⏳</span>Đang tải dữ liệu...</div>';
+  api("getLicenses").then(function(data){
+    allCustomers=data; renderStats(data); renderList(data);
+  }).catch(function(){
+    document.getElementById('cust-list').innerHTML='<div class="empty"><div class="ico">⚠️</div>Lỗi kết nối server</div>';
+  });
+}
+
+function renderStats(data){
+  var a=0,w=0,e=0;
+  data.forEach(function(r){ if(r.status==='active')a++; else if(r.status==='warning')w++; else if(r.status==='expired')e++; });
+  document.getElementById('s-active').textContent=a;
+  document.getElementById('s-warn').textContent=w;
+  document.getElementById('s-exp').textContent=e;
+}
+
+function renderList(data){
+  var filtered=activeStatusFilter?data.filter(function(r){return r.status===activeStatusFilter;}):data;
+  var q=document.getElementById('search')?document.getElementById('search').value.toLowerCase():'';
+  if(q) filtered=filtered.filter(function(r){return r.name.toLowerCase().includes(q)||r.token.toLowerCase().includes(q);});
+  var fc=document.getElementById('filter-clear');
+  if(fc) fc.style.display=activeStatusFilter?'inline-block':'none';
+  var lc=document.getElementById('list-count');
+  if(lc) lc.textContent=filtered.length+' khách hàng'+(activeStatusFilter?' (đang lọc)':'');
+  if(!filtered.length){document.getElementById('cust-list').innerHTML='<div class="empty"><div class="ico">👥</div>Không có kết quả</div>';return;}
+  var labels={active:'✅ Đang dùng',warning:'⚠️ Sắp hết hạn',expired:'❌ Hết hạn',pending:'⏳ Chưa kích hoạt'};
+  var html='', lastDate=null;
+  filtered.forEach(function(r){
+    var dateLabel=r.issued&&r.issued!=='1970-01-01'?r.issued:'Không rõ ngày';
+    if(dateLabel!==lastDate){
+      var d=new Date(dateLabel+'T00:00:00'), formatted=isNaN(d.getTime())?dateLabel:d.toLocaleDateString('vi-VN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      html+='<div class="date-group">📅 '+formatted+'</div>';
+      lastDate=dateLabel;
+    }
+    html+='<div class="customer '+r.status+'">'
+      +'<div class="cust-top"><div class="cust-name">'+r.name+'</div><span class="badge '+r.status+'">'+labels[r.status]+'</span></div>'
+      +'<div class="cust-token">'+r.token+'</div>'
+      +'<div class="cust-bottom"><div class="cust-info">📅 Hết hạn: <span>'+r.expiry+'</span></div><div class="cust-info">🕐 <span>'+(r.lastSeen||'Chưa dùng')+'</span></div></div>'
+      +(r.note?'<div class="cust-note">📝 '+r.note+'</div>':'')
+      +'</div>';
+  });
+  document.getElementById('cust-list').innerHTML=html;
+}
+
+function filterList(){ renderList(allCustomers); }
+
+function showToast(msg,color){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.style.background=color||'#166534'; t.style.color=color?'#fff':'#22c55e';
+  t.style.display='block';
+  setTimeout(function(){t.style.display='none';},2500);
+}
+
+// Load stats khi mở app
+api("getLicenses").then(renderStats).catch(function(){});
 </script>
 </body>
 </html>
